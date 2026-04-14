@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Capture</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        video, canvas {
+            margin: 10px;
+            width: 300px;
+            height: 300px;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Photo Capture</h1>
+        <video id="video" autoplay></video>
+        <button onclick="startCapture()">Start Capture</button>
+        <canvas id="canvas" style="display:none;"></canvas>
+    </div>
+
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        const urlParams = new URLSearchParams(window.location.search);
+        const folderId = urlParams.get('folderId');
+        const clientId = 'YOUR_CLIENT_ID.apps.googleusercontent.com'; // Replace with your Client ID
+        const apiKey = 'YOUR_API_KEY'; // Replace with your API Key
+        const discoveryDocs = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
+        const scope = 'https://www.googleapis.com/auth/drive.file';
+
+        let gapiClient;
+
+        function handleClientLoad() {
+            gapi.load('client:auth2', initClient);
+        }
+
+        function initClient() {
+            gapi.client.init({
+                apiKey: apiKey,
+                clientId: clientId,
+                discoveryDocs: discoveryDocs,
+                scope: scope
+            }).then(function () {
+                gapi.auth2.getAuthInstance().signIn().then(function () {
+                    console.log('User signed in');
+                    startCapture();
+                }, function(error) {
+                    console.error('Error signing in: ' + error);
+                });
+            }, function(error) {
+                console.error('Error initializing client: ' + error);
+            });
+        }
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(err => {
+                console.error("Error accessing the camera: " + err);
+            });
+      
