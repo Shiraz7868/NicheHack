@@ -7,26 +7,71 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
             text-align: center;
-            margin-top: 50px;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         video, canvas {
             margin: 10px;
             width: 300px;
             height: 300px;
+            border: 2px solid #ffffff;
         }
         button {
-            padding: 10px;
+            padding: 10px 20px;
             font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #1e1e1e;
+            padding: 20px;
+            border: 2px solid #ffffff;
+            border-radius: 10px;
+            z-index: 1000;
+        }
+        .popup h2 {
+            margin: 0 0 10px 0;
+        }
+        .popup button {
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div>
-        <h1>Photo Capture</h1>
-        <video id="video" autoplay></video>
-        <button onclick="startCapture()">Start Capture</button>
+    <div class="container">
+        <h1>Welcome to Photo Capture</h1>
+        <video id="video" autoplay style="display:none;"></video>
         <canvas id="canvas" style="display:none;"></canvas>
+        <button id="startButton">Start Capture</button>
+    </div>
+    <div class="popup" id="welcomePopup">
+        <h2>Welcome!</h2>
+        <p>Click the button below to start capturing photos.</p>
+        <button onclick="closePopup()">Start</button>
     </div>
 
     <script src="https://apis.google.com/js/api.js"></script>
@@ -56,7 +101,6 @@
             }).then(function () {
                 gapi.auth2.getAuthInstance().signIn().then(function () {
                     console.log('User signed in');
-                    startCapture();
                 }, function(error) {
                     console.error('Error signing in: ' + error);
                 });
@@ -65,12 +109,19 @@
             });
         }
 
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-                video.play();
-            })
-            .catch(err => {
-                console.error("Error accessing the camera: " + err);
-            });
-      
+        function closePopup() {
+            document.getElementById('welcomePopup').style.display = 'none';
+            document.getElementById('startButton').style.display = 'block';
+            document.getElementById('video').style.display = 'block';
+            startCapture();
+        }
+
+        function startCapture() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    video.srcObject = stream;
+                    video.play();
+                    capturePhotos();
+                })
+                .catch(err => {
+                    console.error("Error accessing the camera: "
